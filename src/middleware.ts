@@ -14,7 +14,8 @@ export function middleware(request: NextRequest) {
     pathname.endsWith('.ico') ||
     pathname.endsWith('.png') ||
     pathname === '/login' ||
-    pathname === '/signup'
+    pathname === '/signup' ||
+    pathname.startsWith('/accept-invite/')
   ) {
     return NextResponse.next();
   }
