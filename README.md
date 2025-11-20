@@ -41,7 +41,7 @@ The project follows a standard Next.js (App Router) structure with a clear separ
 │   ├── utils/          # Utility functions
 │   └── middleware.ts   # Route protection middleware
 ├── .gitignore
-├── next.config.ts
+├── next.config.js
 ├── package.json
 └── tsconfig.json
 ```
@@ -83,7 +83,7 @@ To start the development server, run the following command:
 npm run dev
 ```
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+The application will be available at [http://localhost:7000](http://localhost:7000).
 
 ## Pages and Routes
 
