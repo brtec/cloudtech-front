@@ -63,7 +63,7 @@ const CompanyDetailsPage = ({ params }: { params: { id: string } }) => {
             <div className="flex items-center space-x-4">
               <img
                 className="w-16 h-16 rounded-full"
-                src={company.logo}
+                src={company.logoUrl}
                 alt=""
               />
               <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-white">
@@ -110,11 +110,11 @@ const CompanyDetailsPage = ({ params }: { params: { id: string } }) => {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-                              {company.members.map((member) => (
+                              {company.members?.map((member) => (
                                 <tr key={member.id}>
                                   <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                      {member.name}
+                                      {member.name || 'N/A'}
                                     </div>
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap">

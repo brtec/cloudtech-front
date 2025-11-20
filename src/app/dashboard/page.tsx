@@ -17,8 +17,10 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchCompanies = async () => {
+      setLoading(true);
       try {
-        const data = await getCompanies();
+        // Use server-side pagination
+        const data = await getCompanies(currentPage, companiesPerPage);
         setCompanies(data);
       } catch (err) {
         setError('Failed to fetch companies.');
@@ -28,14 +30,7 @@ const DashboardPage = () => {
     };
 
     fetchCompanies();
-  }, []);
-
-  const indexOfLastCompany = currentPage * companiesPerPage;
-  const indexOfFirstCompany = indexOfLastCompany - companiesPerPage;
-  const currentCompanies = companies.slice(
-    indexOfFirstCompany,
-    indexOfLastCompany
-  );
+  }, [currentPage]);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -67,7 +62,7 @@ const DashboardPage = () => {
             <div className="px-4 py-8 sm:px-0">
               <ErrorMessage message={error} />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {currentCompanies.map((company) => (
+                {companies.map((company) => (
                   <div
                     key={company.id}
                     onClick={() => handleCompanyClick(company.id)}
@@ -76,7 +71,7 @@ const DashboardPage = () => {
                     <div className="flex-shrink-0">
                       <img
                         className="w-10 h-10 rounded-full"
-                        src={company.logo}
+                        src={company.logoUrl}
                         alt=""
                       />
                     </div>
@@ -102,10 +97,8 @@ const DashboardPage = () => {
                   </button>
                   <button
                     onClick={() => paginate(currentPage + 1)}
-                    disabled={
-                      currentPage ===
-                      Math.ceil(companies.length / companiesPerPage)
-                    }
+                    // We don't know the total count from the API yet, so we'll just assume there might be a next page if we got a full page
+                    disabled={companies.length < companiesPerPage}
                     className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                   >
                     Next
@@ -113,46 +106,27 @@ const DashboardPage = () => {
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700 dark:text-gray-400">
-                      Showing{' '}
-                      <span className="font-medium">
-                        {indexOfFirstCompany + 1}
-                      </span>{' '}
-                      to{' '}
-                      <span className="font-medium">
-                        {indexOfLastCompany > companies.length
-                          ? companies.length
-                          : indexOfLastCompany}
-                      </span>{' '}
-                      of <span className="font-medium">{companies.length}</span>{' '}
-                      results
-                    </p>
+                    {/* Pagination info omitted as we don't have total count */}
                   </div>
                   <div>
-                    <nav
+                     <nav
                       className="relative z-0 inline-flex -space-x-px rounded-md shadow-sm"
                       aria-label="Pagination"
                     >
-                      {Array.from(
-                        {
-                          length: Math.ceil(
-                            companies.length / companiesPerPage
-                          ),
-                        },
-                        (_, i) => (
-                          <button
-                            key={i}
-                            onClick={() => paginate(i + 1)}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              currentPage === i + 1
-                                ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
-                            }`}
-                          >
-                            {i + 1}
-                          </button>
-                        )
-                      )}
+                      <button
+                        onClick={() => paginate(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50"
+                      >
+                        Previous
+                      </button>
+                      <button
+                         onClick={() => paginate(currentPage + 1)}
+                         disabled={companies.length < companiesPerPage}
+                         className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50"
+                      >
+                        Next
+                      </button>
                     </nav>
                   </div>
                 </div>

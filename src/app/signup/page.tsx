@@ -25,9 +25,9 @@ const SignupPage = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await api.post('/auth/signup', { name, email, password });
-      login(response.data.token);
-      router.push('/dashboard');
+      await api.post('/auth/signup', { name, email, password });
+      // Redirect to login after successful signup since the API doesn't return a token
+      router.push('/login');
     } catch (err) {
       setError('Failed to create an account. Please try again.');
     } finally {

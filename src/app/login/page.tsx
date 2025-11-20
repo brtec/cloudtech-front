@@ -25,7 +25,7 @@ const LoginPage = () => {
     setError('');
     try {
       const response = await api.post('/auth/login', { email, password });
-      login(response.data.token);
+      login(response.data.accessToken);
       router.push('/dashboard');
     } catch (err) {
       setError('Invalid email or password.');
