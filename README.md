@@ -29,7 +29,7 @@ This is the frontend for the CloudTech Platform, a web application for managing 
 The project follows a standard Next.js (App Router) structure with a clear separation of concerns:
 
 ```
-frontend/
+.
 ├── public/
 │   └── assets/         # Static assets like images and logos
 ├── src/
@@ -60,19 +60,14 @@ frontend/
     git clone <repository-url>
     ```
 
-2.  **Navigate to the frontend directory:**
-    ```bash
-    cd frontend
-    ```
-
-3.  **Install dependencies:**
+2.  **Install dependencies:**
     ```bash
     npm install
     ```
 
 ### Environment Variables
 
-Create a `.env.local` file in the `frontend` directory and add the following environment variable:
+Create a `.env.local` file in the root directory and add the following environment variable:
 
 ```
 NEXT_PUBLIC_API_URL=http://localhost:4000
