@@ -17,11 +17,11 @@ const AcceptInvitePage = ({ params }: { params: { token: string } }) => {
     setLoading(true);
     setError('');
     try {
-      const response = await api.post('/auth/accept-invite', {
+      await api.post('/auth/accept-invite', {
         token: params.token,
       });
-      login(response.data.token);
-      router.push('/dashboard');
+      // Redirect to login after accepting invite since the API doesn't return a token
+      router.push('/login');
     } catch (err) {
       setError('Failed to accept invite. The token may be invalid or expired.');
     } finally {
