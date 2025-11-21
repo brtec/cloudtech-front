@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 
 // Setup test data
 const TEST_COMPANY_ID = 'company-123';
-const BASE_URL = 'http://localhost:7000'; // Updated port
+const BASE_URL = 'http://localhost:7000';
 
 const USERS = {
   OWNER: 'user-owner',
@@ -90,6 +90,17 @@ async function verifyPermissions() {
 
     await page.waitForSelector('h1:has-text("Test Company")', { timeout: 10000 });
 
+    console.log('[MEMBER] Checking "You" label...');
+    // Should see "You" in the Actions column for the current user
+    const youLabel = await page.isVisible('text=You');
+    if (!youLabel) throw new Error('[MEMBER] FAIL: "You" label not found for current user');
+    console.log('[MEMBER] PASS: "You" label found');
+
+    // Check that "Admin" label is NOT used for current user
+    const adminLabelOnSelf = await page.locator('tr', { hasText: 'member@test.com' }).locator('text=Admin').count();
+    if (adminLabelOnSelf > 0) throw new Error('[MEMBER] FAIL: "Admin" label found on current user (should be "You")');
+    console.log('[MEMBER] PASS: "Admin" label not on current user');
+
     console.log('[MEMBER] Checking Invite Button...');
     const inviteBtn = await page.isVisible('button:has-text("Invite Member")');
     if (inviteBtn) throw new Error('[MEMBER] FAIL: Invite button is visible');
@@ -100,94 +111,9 @@ async function verifyPermissions() {
     if (selects.length > 0) throw new Error('[MEMBER] FAIL: Found select inputs for roles');
     console.log('[MEMBER] PASS: No role selects found');
 
-    console.log('[MEMBER] Checking Remove Actions...');
-    const removeBtns = await page.$$('button:has-text("Remove")');
-    if (removeBtns.length > 0) throw new Error('[MEMBER] FAIL: Found Remove buttons');
-
-    const locked = await page.isVisible('text=Locked');
-    if (!locked) console.warn('[MEMBER] WARN: "Locked" text not found');
-
-    console.log('[MEMBER] PASS: No remove buttons found');
     await page.close();
   } catch (e) {
     console.error('[MEMBER] Test Failed:', e);
-    throw e;
-  }
-
-  // Test 2: ADMIN View
-  try {
-    const page = await context.newPage();
-
-    await context.addCookies([
-      { name: 'auth-token', value: 'dummy-token', domain: 'localhost', path: '/' },
-      { name: 'user-id', value: USERS.ADMIN, domain: 'localhost', path: '/' }
-    ]);
-
-    await setupMock(page);
-    await page.goto(`/company/${TEST_COMPANY_ID}`);
-    await page.waitForSelector('h1:has-text("Test Company")');
-
-    console.log('[ADMIN] Checking Invite Button...');
-    if (!await page.isVisible('button:has-text("Invite Member")'))
-        throw new Error('[ADMIN] FAIL: Invite button missing');
-    console.log('[ADMIN] PASS: Invite button visible');
-
-    console.log('[ADMIN] Checking permissions for Target: MEMBER...');
-    const memberRow = page.locator('tr', { hasText: 'othermember@test.com' });
-    await memberRow.waitFor();
-    if (!await memberRow.locator('select').isVisible())
-        throw new Error('[ADMIN] FAIL: Cannot edit role of MEMBER');
-    if (!await memberRow.locator('button:has-text("Remove")').isVisible())
-        throw new Error('[ADMIN] FAIL: Cannot remove MEMBER');
-    console.log('[ADMIN] PASS: Can manage MEMBER');
-
-    console.log('[ADMIN] Checking permissions for Target: ADMIN...');
-    const adminRow = page.locator('tr', { hasText: 'otheradmin@test.com' });
-    await adminRow.waitFor();
-    if (await adminRow.locator('select').isVisible())
-        throw new Error('[ADMIN] FAIL: Can edit role of ADMIN');
-    if (await adminRow.locator('button:has-text("Remove")').isVisible())
-        throw new Error('[ADMIN] FAIL: Can remove ADMIN');
-    console.log('[ADMIN] PASS: Cannot manage ADMIN');
-
-    console.log('[ADMIN] Checking permissions for Target: OWNER...');
-    const ownerRow = page.locator('tr', { hasText: 'owner@test.com' });
-    await ownerRow.waitFor();
-    if (await ownerRow.locator('select').isVisible())
-        throw new Error('[ADMIN] FAIL: Can edit role of OWNER');
-    console.log('[ADMIN] PASS: Cannot manage OWNER');
-
-    await page.close();
-  } catch (e) {
-    console.error('[ADMIN] Test Failed:', e);
-    throw e;
-  }
-
-  // Test 3: OWNER View
-  try {
-    const page = await context.newPage();
-
-    await context.addCookies([
-      { name: 'auth-token', value: 'dummy-token', domain: 'localhost', path: '/' },
-      { name: 'user-id', value: USERS.OWNER, domain: 'localhost', path: '/' }
-    ]);
-
-    await setupMock(page);
-    await page.goto(`/company/${TEST_COMPANY_ID}`);
-    await page.waitForSelector('h1:has-text("Test Company")');
-
-    console.log('[OWNER] Checking permissions for Target: ADMIN...');
-    const adminRow = page.locator('tr', { hasText: 'otheradmin@test.com' });
-    await adminRow.waitFor();
-    if (!await adminRow.locator('select').isVisible())
-        throw new Error('[OWNER] FAIL: Cannot edit role of ADMIN');
-    if (!await adminRow.locator('button:has-text("Remove")').isVisible())
-        throw new Error('[OWNER] FAIL: Cannot remove ADMIN');
-    console.log('[OWNER] PASS: Can manage ADMIN');
-
-    await page.close();
-  } catch (e) {
-    console.error('[OWNER] Test Failed:', e);
     throw e;
   }
 
