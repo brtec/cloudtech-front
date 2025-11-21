@@ -1,63 +1,76 @@
 # CloudTech Platform - Frontend
 
-This is the frontend for the CloudTech Platform, a web application for managing companies, members, and invitations. It is built with Next.js, TypeScript, and Tailwind CSS.
+This is the frontend for the CloudTech Platform, a modern and responsive web application for managing companies, members, and invitations. Built with Next.js, TypeScript, and Tailwind CSS, it provides a seamless user experience with robust authentication and role-based access control.
 
 ## Features
 
--   **Authentication:** Secure login and signup functionality.
--   **Dashboard:** View and manage a paginated list of companies.
--   **Company Details:** View company information, including a list of members.
--   **Invite Users:** Invite new users to a company via email.
--   **Accept Invites:** A dedicated page for users to accept company invitations.
--   **Protected Routes:** Middleware ensures that only authenticated users can access protected pages.
--   **Theme Switcher:** Toggle between light and dark modes.
--   **Responsive Design:** A minimalist and responsive user interface that works on all devices.
--   **Error Handling:** User-friendly error messages for API interactions.
--   **Loading States:** Loading indicators provide feedback during data fetching.
+-   **Authentication:**
+    -   Secure login and signup flows.
+    -   Session management using JWT and cookies.
+    -   Protected routes middleware.
+
+-   **Dashboard:**
+    -   View a paginated list of companies you are a member of.
+    -   Create new companies with a name and optional logo URL.
+    -   Visual indicators for Admin roles within companies.
+
+-   **Company Management:**
+    -   **Detailed View:** Access company information and a list of all members.
+    -   **Role-Based Access Control (RBAC):**
+        -   **Owners:** Can manage all members (change roles, remove users) and invite new members.
+        -   **Admins:** Can invite new members and manage regular Members (but cannot modify other Admins or Owners).
+        -   **Members:** Have read-only access to the member list.
+    -   **Member Management:** Promote/demote members and remove users from the company.
+    -   **Invitations:** Invite users via email (defaults to Member role).
+
+-   **User Experience:**
+    -   **Theme Switcher:** Toggle between Light and Dark modes.
+    -   **Responsive Design:** Fully responsive layout optimized for desktop, tablet, and mobile.
+    -   **Interactive UI:** Loading states, error handling, and modals for smoother interactions.
 
 ## Technology Stack
 
--   **Framework:** [Next.js](https://nextjs.org/)
+-   **Framework:** [Next.js 14](https://nextjs.org/) (App Router)
 -   **Language:** [TypeScript](https://www.typescriptlang.org/)
 -   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
--   **API Communication:** [Axios](https://axios-http.com/)
--   **State Management:** [React Context](https://reactjs.org/docs/context.html)
--   **Session Persistence:** [js-cookie](https://github.com/js-cookie/js-cookie)
+-   **State Management:** React Context API (AuthContext, ThemeContext)
+-   **HTTP Client:** [Axios](https://axios-http.com/)
+-   **Testing:** [Playwright](https://playwright.dev/) (for E2E and verification)
+-   **Icons:** Heroicons (via SVG)
 
 ## Project Structure
 
-The project follows a standard Next.js (App Router) structure with a clear separation of concerns:
-
 ```
 .
-├── public/
-│   └── assets/         # Static assets like images and logos
+├── public/             # Static assets
 ├── src/
-│   ├── app/            # Application routes and pages
-│   ├── components/     # Reusable React components (e.g., Spinner, Modal)
-│   ├── context/        # Global state management (e.g., AuthContext, ThemeContext)
-│   ├── services/       # API integration layer (e.g., api.ts, companyService.ts)
-│   ├── styles/         # Global styles
-│   ├── utils/          # Utility functions
+│   ├── app/            # Next.js App Router pages
+│   │   ├── company/    # Company details and management
+│   │   ├── dashboard/  # User dashboard
+│   │   ├── login/      # Authentication pages
+│   │   ├── signup/     # Registration pages
+│   │   └── ...
+│   ├── components/     # Reusable UI components (Header, Modals, Spinner, etc.)
+│   ├── context/        # Global state providers (Auth, Theme)
+│   ├── services/       # API integration layer
 │   └── middleware.ts   # Route protection middleware
-├── .gitignore
-├── next.config.js
-├── package.json
-└── tsconfig.json
+├── verify_permissions.js # Playwright script for verifying permission logic
+└── ...
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
--   [Node.js](https://nodejs.org/) (v18 or higher)
--   [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+-   Node.js (v18 or higher)
+-   npm or yarn
 
 ### Installation
 
 1.  **Clone the repository:**
     ```bash
     git clone <repository-url>
+    cd cloudtech-platform-frontend
     ```
 
 2.  **Install dependencies:**
@@ -65,31 +78,38 @@ The project follows a standard Next.js (App Router) structure with a clear separ
     npm install
     ```
 
-### Environment Variables
+3.  **Environment Setup:**
+    Create a `.env.local` file in the root directory:
+    ```env
+    NEXT_PUBLIC_API_URL=http://localhost:4000
+    ```
+    *Note: Adjust the URL to match your backend server address.*
 
-Create a `.env.local` file in the root directory and add the following environment variable:
+### Running the Application
 
-```
-NEXT_PUBLIC_API_URL=http://localhost:4000
-```
-
-This variable points to the backend API.
-
-### Running the Development Server
-
-To start the development server, run the following command:
-
+**Development Mode:**
 ```bash
 npm run dev
 ```
+The app will be available at `http://localhost:7000`.
 
-The application will be available at [http://localhost:7000](http://localhost:7000).
+**Production Build:**
+```bash
+npm run build
+npm start
+```
 
-## Pages and Routes
+## Verification & Testing
 
--   `/login`: **Login Page** - Allows existing users to sign in.
--   `/signup`: **Signup Page** - Allows new users to create an account.
--   `/dashboard`: **Dashboard** - Displays a list of companies the user is a member of. This is a protected route.
--   `/company/[id]`: **Company Details** - Shows detailed information about a specific company, including its members. This is a protected route.
--   `/accept-invite/[token]`: **Accept Invitation** - A page where a user can accept an invitation to join a company using a unique token.
--   `/404`: **Not Found** - A custom page for handling invalid routes.
+The project includes a Playwright script to verify the complex role-based permissions logic (Owner vs. Admin vs. Member).
+
+To run the permission verification script:
+1. Ensure the development server is running (`npm run dev` or `npm start`).
+2. Run the verification script:
+   ```bash
+   node verify_permissions.js
+   ```
+
+## Deployment
+
+This application is designed to be deployed on platforms like Vercel or any containerized environment (Docker). ensure the `NEXT_PUBLIC_API_URL` environment variable is set correctly in your deployment environment.

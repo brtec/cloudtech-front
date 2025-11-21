@@ -24,6 +24,7 @@ const CompanyDetailsPage = ({ params }: { params: { id: string } }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedMembers, setExpandedMembers] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<'OWNER' | 'ADMIN' | 'MEMBER' | null>(null);
   const router = useRouter();
   const { userId } = useAuth();
 
@@ -44,6 +45,7 @@ const CompanyDetailsPage = ({ params }: { params: { id: string } }) => {
         
         // Verificar se é admin
         setIsAdmin(userMembership.role === 'ADMIN' || userMembership.role === 'OWNER');
+        setCurrentUserRole(userMembership.role as 'OWNER' | 'ADMIN' | 'MEMBER');
         setCompany(data);
       } catch (err) {
         setError('Failed to fetch company details.');
@@ -56,6 +58,13 @@ const CompanyDetailsPage = ({ params }: { params: { id: string } }) => {
       fetchCompany();
     }
   }, [params.id, userId]);
+
+  const canManage = (targetRole: string) => {
+    if (!currentUserRole) return false;
+    if (currentUserRole === 'OWNER') return true;
+    if (currentUserRole === 'ADMIN') return targetRole === 'MEMBER';
+    return false;
+  };
 
   const handleInviteUser = async (email: string): Promise<any> => {
     try {
@@ -258,8 +267,12 @@ const CompanyDetailsPage = ({ params }: { params: { id: string } }) => {
                           </div>
                         </td>
                         <td className="px-8 py-4">
-                          {member.userId === userId ? (
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`}>
+                          {member.userId === userId || !canManage(member.role) ? (
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                              member.role === 'OWNER' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                              member.role === 'ADMIN' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                              'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            }`}>
                               {member.role}
                             </span>
                           ) : (
@@ -291,7 +304,7 @@ const CompanyDetailsPage = ({ params }: { params: { id: string } }) => {
                               </svg>
                               Admin
                             </span>
-                          ) : (
+                          ) : canManage(member.role) ? (
                             <button
                               onClick={() => handleRemoveMember(member.id, member.userId)}
                               className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
@@ -301,6 +314,13 @@ const CompanyDetailsPage = ({ params }: { params: { id: string } }) => {
                               </svg>
                               Remove
                             </button>
+                          ) : (
+                            <span className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-md cursor-not-allowed">
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                              Locked
+                            </span>
                           )}
                         </td>
                       </tr>
